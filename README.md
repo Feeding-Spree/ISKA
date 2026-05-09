@@ -52,19 +52,17 @@ ollama pull gemma:2b
 ### 2. Install Dependencies
 
 ```bash```
-pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio
+```pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio```
 
 ```bash```
-python main.py
+```python main.py```
 To launch the Administrative CMS (Accessible via localhost:5000):
 
 ```bash```
-python admin.py
+```python admin.py```
 
 ## 📜 Development Philosophy
 ISKA follows the YAGNI (You Aren't Gonna Need It) principle and Semantic Versioning. It was developed iteratively, evolving from a simple database manager (v1.0.0) to a fully sovereign semantic assistant (v2.5.0).
-
-Institutional Partner: Polytechnic University of the Philippines - Biñan
 
 Current Version: 2.5.0 "Sovereign Semantic"
 
