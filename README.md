@@ -1,7 +1,7 @@
 # ISKA: Intelligent Standing Kiosk for Annnouncements and Inquiries
 ### *A Sovereign, Semantic AI Kiosk*
 
-**ISKA** is an offline-first, intelligent information kiosk designed to provide students with near-instant access to campus information, announcements, and FAQs. Built specifically for the **Raspberry Pi 4**, it leverages a sophisticated "Sovereign AI" architecture that operates entirely without an internet connection.
+**ISKA** is an offline-first, intelligent information kiosk designed to provide students with near-instant access to campus information, announcements, and FAQs. Built specifically for the **Raspberry Pi 4 Model B**, it leverages a sophisticated "Sovereign AI" architecture that operates entirely without an internet connection.
 
 ---
 
@@ -69,9 +69,9 @@ Institutional Partner: Polytechnic University of the Philippines - Biñan
 Current Version: 2.5.0 "Sovereign Semantic"
 
 Authors:
-Amado, Arwel Daylan S.
-Bermudez, John Carlo B.
-Espino, Raeh Manart H.
-Gerobin, Clarence D.
-Reyes, Mariel !.
+Amado, Arwel Daylan S.<br>
+Bermudez, John Carlo B.<br>
+Espino, Raeh Manart H.<br>
+Gerobin, Clarence D.<br>
+Reyes, Mariel !.<br>
 Manabat, Kristine Heart A.
