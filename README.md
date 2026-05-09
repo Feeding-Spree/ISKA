@@ -45,26 +45,48 @@
 
 ### 1. Prerequisite: Ollama
 Install Ollama and pull the Gemma 2B model:
-```bash```
+```bash
 curl -fsSL [https://ollama.com/install.sh](https://ollama.com/install.sh)
 ollama pull gemma:2b
+```
 
 ### 2. Install Dependencies
 
-```bash```
-```pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio```
+```bash
+pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio
+```
 
-```bash```
-```python main.py```
+```bash 
+python main.py
+```
+<br>
+To launch the ISKA interface.
+
+```bash 
+python admin.py
+```
+<br>
 To launch the Administrative CMS (Accessible via localhost:5000):
 
-```bash```
-```python admin.py```
+### 3. Database Setup
+Before the kiosk for the first time, initialize the local database:<br>
+```bash 
+python db_setup.py
+```
+<br>
+
+This will automatically generate the following tables:<br>
+*   **`announcements`**: For campus news.
+*   **`kiosk_info`**: For FAQ triggers.
+*   **`query_logs`**: For student analytics.
+*   **`users`**: For secure admin login.
 
 ## 📜 Development Philosophy
 ISKA follows the YAGNI (You Aren't Gonna Need It) principle and Semantic Versioning. It was developed iteratively, evolving from a simple database manager (v1.0.0) to a fully sovereign semantic assistant (v2.5.0).
 
 Current Version: 2.5.0 "Sovereign Semantic"
+
+
 
 Authors:
 Amado, Arwel Daylan S.<br>
