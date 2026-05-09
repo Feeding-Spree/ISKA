@@ -56,17 +56,14 @@ ollama pull gemma:2b
 pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio
 ```
 
+To launch the ISKA interface.
 ```bash 
 python main.py
 ```
-<br>
-To launch the ISKA interface.
-
+To launch the Administrative CMS (Accessible via localhost:5000):
 ```bash 
 python admin.py
 ```
-<br>
-To launch the Administrative CMS (Accessible via localhost:5000):
 
 ### 3. Database Setup
 Before the kiosk for the first time, initialize the local database:<br>
