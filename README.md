@@ -85,10 +85,10 @@ Current Version: 2.5.0 "Sovereign Semantic"
 
 
 
-Authors:
-Amado, Arwel Daylan S.<br>
-Bermudez, John Carlo B.<br>
-Espino, Raeh Manart H.<br>
-Gerobin, Clarence D.<br>
-Reyes, Mariel !.<br>
-Manabat, Kristine Heart A.
+**Authors:<br>**
+**Amado, Arwel Daylan S.<br>**
+**Bermudez, John Carlo B.<br>**
+**Espino, Raeh Manart H.<br>**
+**Gerobin, Clarence D.<br>**
+**Reyes, Mariel !.<br>**
+**Manabat, Kristine Heart A.**
