@@ -10,7 +10,7 @@
 *   **Sovereign Intelligence:** Powered by **Ollama (Gemma 2B)** running 100% locally. No cloud APIs, no data leaks, and zero operational costs.
 *   **Semantic RAG (Retrieval-Augmented Generation):** Uses vector embeddings (`all-MiniLM-L6-v2`) to find the *intent* behind questions. Grounded in a local SQLite database to ensure zero-hallucination responses.
 *   **Localized Voice Interface:** Includes a custom "Filipino Fix" using the **Vosk engine** and phonetic overrides to accurately handle local accents and campus-specific terms (e.g., "ISKA," "PUP," "Biñan").
-*   **Student Analytics Suite:** A dedicated administrative portal to review session transcripts, track usage density (PST timezone), and audit AI performance through messaging-style modals.
+*   **Student Analytics Suite:** A dedicated administrative portal to review session transcripts, track usage density (UTC +8 timezone), and audit AI performance through messaging-style modals.
 *   **Hardware-Resilient Engineering:** Implements a **Persistent Microphone Architecture** and a **Vosk-to-STT Handshake** to prevent hardware collisions on the Raspberry Pi audio bus.
 
 ---
