@@ -1,5 +1,5 @@
-# ISKA: Integrated Student Knowledge Assistant
-### *A Sovereign, Semantic AI Kiosk for PUP Biñan*
+# ISKA: Intelligent Standing Kiosk for Annnouncements and Inquiries
+### *A Sovereign, Semantic AI Kiosk*
 
 **ISKA** is an offline-first, intelligent information kiosk designed to provide students with near-instant access to campus information, announcements, and FAQs. Built specifically for the **Raspberry Pi 4**, it leverages a sophisticated "Sovereign AI" architecture that operates entirely without an internet connection.
 
