@@ -66,7 +66,7 @@ python admin.py
 ```
 
 ### 3. Database Setup
-Before the kiosk for the first time, initialize the local database:<br>
+Before launching the kiosk for the first time, initialize the local database:<br>
 ```bash 
 python db_setup.py
 ```
