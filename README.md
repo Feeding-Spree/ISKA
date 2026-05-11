@@ -53,7 +53,7 @@ ollama pull gemma:2b
 ### 2. Install Dependencies
 
 ```bash
-pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio
+pip install Flask ollama sentence-transformers vosk edge-tts pygame pyaudio pillow
 ```
 
 To launch the ISKA interface.
@@ -85,7 +85,7 @@ Current Version: 2.5.0 "Sovereign Semantic"
 
 
 
-**Authors:<br>**
+Authors:<br>
 **Amado, Arwel Daylan S.<br>**
 **Bermudez, John Carlo B.<br>**
 **Espino, Raeh Manart H.<br>**

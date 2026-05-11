@@ -12,7 +12,7 @@ class IskaBackend:
         # RAG: minimum similarity to retrieve a DB fact at all.
         # 0.50 is intentionally permissive — better to retrieve and let
         # Ollama decide than to miss a relevant answer entirely.
-        self.rag_threshold = 0.30
+        self.rag_threshold = 0.50
 
         # RAG: if similarity hits THIS, skip Ollama and return the DB
         # answer directly. This is the "Adaptive Response Layer."
@@ -63,7 +63,11 @@ class IskaBackend:
             "you have been unlocked",
         ]
 
-        # --- DB KEYWORD EMBEDDINGS CACHE ---
+        # --- OLLAMA TIMEOUT ---
+        # If Ollama hangs, the kiosk freezes forever without this.
+        # 30 seconds is generous for a 2-sentence response on Pi 4.
+        # Lower to 20 if you want faster failure recovery.
+        self.ollama_timeout = 30
         # Populated on first query, refreshed whenever the DB row count
         # changes (i.e. admin adds/deletes an entry).
         # This means the Pi never re-embeds unchanged keywords.
@@ -198,8 +202,7 @@ class IskaBackend:
                     return self._db_cache['responses_en'][best_idx]
                 else:
                     return self._db_cache['responses_tl'][best_idx]
-                
-            print(f"[RAG DEBUG] Input: '{user_input}' | Best: '{best_keyword}' | Score: {best_score:.4f}")
+
             print(f"[RAG] Score {best_score:.2f} below threshold — no fact retrieved.")
             return None
 
@@ -264,6 +267,25 @@ class IskaBackend:
         # AUGMENTED PATH or FALLBACK PATH: Send to Ollama.
         lang_rule = "English" if lang == 'en' else "Tagalog"
 
+        # Small talk interceptor — catches greetings and capability questions
+        # before they reach Ollama, which tends to mishandle them.
+        small_talk = ["can you hear me", "hello", "hi", "kumusta",
+                      "are you there", "who are you", "what are you",
+                      "what can you do", "makakatulong ka ba"]
+        if any(phrase in user_input.lower() for phrase in small_talk):
+            response = (
+                "ISKA AI:\n\nHello! I'm ISKA, your smart kiosk assistant for "
+                "PUP Biñan campus. You can ask me about offices, enrollment, "
+                "schedules, and more!"
+                if lang == 'en' else
+                "ISKA AI:\n\nKamusta! Ako si ISKA, ang inyong kiosk assistant "
+                "para sa PUP Biñan campus. Maaari kayong magtanong tungkol sa "
+                "mga opisina, enrollment, iskedyul, at iba pa!"
+            )
+            if ui_callback:
+                ui_callback(response)
+            return response
+
         if db_fact:
             # Moderate confidence — use the fact as grounding context.
             print(
@@ -271,15 +293,22 @@ class IskaBackend:
                 f"Sending fact to Ollama as context."
             )
             prompt_content = (
-                f"Answer the student in {lang_rule} using ONLY this fact: "
-                f"'{db_fact}'. Student asks: '{user_input}'"
+                f"You are ISKA, a kiosk at PUP Biñan campus. "
+                f"Answer the student directly in {lang_rule} using ONLY this fact: '{db_fact}'. "
+                f"Student asks: '{user_input}'. "
+                f"Do not add greetings or follow-up questions."
             )
         else:
             # No DB match — Ollama answers freely but stays on-topic.
             print("[ADAPTIVE] No DB fact found. Ollama answering with topic guard.")
             prompt_content = (
-                f"Answer in {lang_rule}. Student asks: '{user_input}'. "
-                f"If this is not about PUP Biñan campus, politely refuse."
+                f"You are ISKA, a kiosk assistant at PUP Biñan campus. "
+                f"A student says: '{user_input}'. "
+                f"If the question is about PUP Biñan campus, answer it directly "
+                f"in {lang_rule} in 1-2 sentences. "
+                f"If it has nothing to do with PUP Biñan campus, say you can only "
+                f"help with campus-related questions. "
+                f"Do not say you cannot serve students. Do not add greetings."
             )
 
         messages = [
@@ -287,37 +316,56 @@ class IskaBackend:
             {'role': 'user', 'content': prompt_content},
         ]
 
-        # --- LAYER 4: Stream and Accumulate ---
+        # --- LAYER 4: Stream and Accumulate (with timeout) ---
         full_response = "ISKA AI:\n\n"
         if ui_callback:
             ui_callback(full_response)
 
-        try:
-            stream = ollama.chat(
-                model='gemma:2b',
-                messages=messages,
-                stream=True,
-                options={
-                    "temperature": 0.2,
-                    "num_predict": 60  # Hard token cap — ~2 sentences max.
-                                       # Prevents the model from rambling even
-                                       # if it ignores the system prompt rules.
-                }
-            )
+        # We run the Ollama stream in a child thread and join it with a
+        # timeout. If it doesn't finish in time, we cancel it gracefully
+        # rather than letting the kiosk hang indefinitely.
+        stream_error = [None]
+        stream_done = threading.Event()
 
-            for chunk in stream:
-                if 'message' in chunk and 'content' in chunk['message']:
-                    word = chunk['message']['content']
-                    full_response += word
+        def run_stream():
+            nonlocal full_response
+            try:
+                stream = ollama.chat(
+                    model='gemma:2b',
+                    messages=messages,
+                    stream=True,
+                    options={
+                        "temperature": 0.2,
+                        "num_predict": 60  # Hard token cap — ~2 sentences max.
+                    }
+                )
+                for chunk in stream:
+                    if 'message' in chunk and 'content' in chunk['message']:
+                        word = chunk['message']['content']
+                        full_response += word
+                        if ui_callback:
+                            ui_callback(full_response)
+            except Exception as e:
+                stream_error[0] = e
+            finally:
+                stream_done.set()
 
-                    if ui_callback:
-                        ui_callback(full_response)
+        stream_thread = threading.Thread(target=run_stream, daemon=True)
+        stream_thread.start()
+        finished = stream_done.wait(timeout=self.ollama_timeout)
 
-            return full_response
+        if not finished:
+            print(f"[Ollama] Timed out after {self.ollama_timeout}s — returning fallback.")
+            error_msg = "I'm taking too long to respond. Please try again."
+            if ui_callback:
+                ui_callback(error_msg)
+            return error_msg
 
-        except Exception as e:
-            print(f"[Local AI Error] {e}")
+        if stream_error[0] is not None:
+            print(f"[Local AI Error] {stream_error[0]}")
             error_msg = "My local processor is currently overloaded. Please try again."
             if ui_callback:
                 ui_callback(error_msg)
             return error_msg
+
+        return full_response
