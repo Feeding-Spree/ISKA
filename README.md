@@ -90,5 +90,5 @@ Authors:<br>
 **Bermudez, John Carlo B.<br>**
 **Espino, Raeh Manart H.<br>**
 **Gerobin, Clarence D.<br>**
-**Reyes, Mariel !.<br>**
+**Reyes, Mariel I.<br>**
 **Manabat, Kristine Heart A.**

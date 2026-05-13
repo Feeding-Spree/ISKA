@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### Changed
 
-* ****ISKA-UI-7027 MINOR** FACE_W and FACE_H constants are now ratio-correct at 370x222 (5:3). Formula documented in code: FACE_H = FACE_W × 0.6 for future scaling.
+* **ISKA-UI-7027 MINOR** FACE_W and FACE_H constants are now ratio-correct at 370x222 (5:3). Formula documented in code: FACE_H = FACE_W × 0.6 for future scaling.
 
 ## [2.6.0] - 2026-05-13
 
