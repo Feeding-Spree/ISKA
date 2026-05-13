@@ -71,8 +71,8 @@ FRAME_DELAY = {
     "error":     900,
 }
 
-FACE_W = 340
-FACE_H = 300
+FACE_W = 370
+FACE_H = 222
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -930,6 +930,31 @@ class ISKA(object):
             self._stream_bubble.config(text=text or "...")
         self._scroll_bottom()
 
+    def _clear_chat(self):
+        """
+        Wipes all chat bubbles and restores the greeting.
+        Called after the farewell audio finishes in _sleep_sequence.
+        The full conversation is already saved to query_logs per interaction,
+        grouped by session_id — visible in the admin dashboard.
+        """
+        # Destroy all child widgets in the chat frame
+        for widget in self._chat_frame.winfo_children():
+            widget.destroy()
+
+        self._stream_bubble = None
+
+        # Restore the greeting bubbles for the next student
+        ChatMessage.add(self._chat_frame,
+                        "Magandang araw! I'm ISKA, your campus guide.",
+                        sender="bot")
+        ChatMessage.add(self._chat_frame,
+                        "Ask me anything about PUP Biñan — "
+                        "type below or tap the mic to speak.",
+                        sender="bot")
+        self._scroll_bottom()
+        print(f"[UI] Chat cleared. Session {self.current_session_id} "
+              f"archived in admin dashboard.")
+
     # =========================================================================
     #  Sleep sequence
     # =========================================================================
@@ -940,6 +965,10 @@ class ISKA(object):
         self.root.after(0, lambda: self._add_bot_message(msg))
         self._log_interaction(text_input, msg)
         self._speak(msg)
+
+        # Brief pause so the student sees the farewell bubble before wipe
+        time.sleep(1.2)
+        self.root.after(0, self._clear_chat)
         self.root.after(0, self._go_to_sleep)
 
     # =========================================================================
