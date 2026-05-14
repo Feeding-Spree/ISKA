@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file. This projec
 *Focuses on the animated UI/UX interface, layout design, and student-facing chat components.*
 
 ### [4.1.0] - 2026-05-14
-* **ISKA-UI-7031 MINOR** Added **PUP logo image support** in the topbar, replacing the gold text badge with `pup_logo.png`.
+* **ISKA-UI-7031 MINOR** Added **Logo image support** in the topbar, replacing the gold text badge with `logo.png`.
 * **ISKA-UI-7032 PATCH** Refined **BMO face scaling** to 370x222 (5:3 ratio) to prevent visual distortion and horizontal stretching.
 * **ISKA-UI-7033 MINOR** **UI De-cluttering:** Reduced online status indicators to a single state pill and badge per designer feedback.
 * **ISKA-UI-7034 MINOR** Integrated **Network Monitor** with the UI badge to display a red "ISKA OFFLINE" alert upon connection loss.
