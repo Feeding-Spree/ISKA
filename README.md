@@ -81,7 +81,12 @@ This will automatically generate the following tables:<br>
 ## 📜 Development Philosophy
 ISKA follows the YAGNI (You Aren't Gonna Need It) principle and Semantic Versioning. It was developed iteratively, evolving from a simple database manager (v1.0.0) to a fully sovereign semantic assistant (v2.5.0).
 
-Current Version: **2.6.1 "Interactive Resilience & Frontend Integration"**
+**Current Release: **v1.5.0 "Kiosk Hardening & Visual Refinement"**
+**System Snapshot:**
+* 📂 **CMS:** v1.1.0 (Analytics & Logs)
+* ⚙️ **CORE:** v2.7.0 (Security & Stability)
+* 🧠 **BACKEND:** v3.2.0 (AI & S-RAG)
+* 🎨 **FRONTEND:** v4.1.0 (UI/UX Interface)
 
 
 

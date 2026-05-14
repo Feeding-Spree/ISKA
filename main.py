@@ -28,6 +28,14 @@ from backend import IskaBackend
 # ============================================================
 MIC_NAME = "8- USB"
 
+# ============================================================
+# EXIT PIN CONFIGURATION
+# This PIN is required to exit the kiosk. Change it to
+# something only your staff/admin team knows.
+# The exit is triggered by tapping the PUP seal 5 times.
+# ============================================================
+EXIT_PIN = "1234"
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  Palette
 # ─────────────────────────────────────────────────────────────────────────────
@@ -222,9 +230,13 @@ class ISKA(object):
         self.current_session_id = None
         self.announcement_index = 0
 
+        # Hidden exit — tap the PUP seal 5 times to trigger PIN dialog
+        self._seal_taps  = 0
+        self._seal_timer = None
+
         # Event-based mic handoff between Vosk and STT
         self._mic_released = threading.Event()
-        self._mic_released.set()
+        self._mic_released.set()  # Start as set so Vosk doesn't block on first run
 
         # Query lock - prevents pile-up on repeated taps
         self._query_lock = threading.Lock()
@@ -288,13 +300,15 @@ class ISKA(object):
         bar.pack(fill=tk.X, side=tk.TOP)
         bar.pack_propagate(False)
 
-        # PUP seal — circular gold badge
-        seal = tk.Frame(bar, bg=GOLD, width=48, height=48)
-        seal.pack(side=tk.LEFT, padx=(20, 14), pady=11)
-        seal.pack_propagate(False)
-        tk.Label(seal, text="PUP",
-                 font=("Helvetica", 10, "bold"),
-                 bg=GOLD, fg=MAROON).place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        # PUP seal — logo image (hidden exit trigger: tap 5x)
+        pup_img = Image.open(os.path.join(ASSETS_DIR, "pup_logo.png")).convert("RGBA")
+        pup_img = pup_img.resize((50, 50), Image.LANCZOS)
+        self._pup_logo = ImageTk.PhotoImage(pup_img)  # keep reference
+
+        seal_lbl = tk.Label(bar, image=self._pup_logo, bg=MAROON,
+                            cursor="hand2")
+        seal_lbl.pack(side=tk.LEFT, padx=(20, 14), pady=11)
+        seal_lbl.bind("<Button-1>", self._on_seal_tap)
 
         title_blk = tk.Frame(bar, bg=MAROON)
         title_blk.pack(side=tk.LEFT, pady=12)
@@ -321,10 +335,12 @@ class ISKA(object):
                                      bg=GOLD_LT, fg=MAROON)
         self.status_label.pack(side=tk.LEFT, padx=(6, 0))
 
+        # Network label kept as hidden element for programmatic updates
+        # but not packed — only the ISKA ONLINE badge and state pill show status
         self._network_label = tk.Label(right_bar, text="● Online",
                                        font=("Helvetica", 10),
                                        bg=MAROON, fg=GREEN_ON)
-        self._network_label.pack(side=tk.RIGHT, padx=(0, 14), pady=18)
+        # Intentionally not packed — hidden from UI
 
     def _build_welcome_banner(self):
         banner = tk.Frame(self.root, bg=BG_CREAM,
@@ -452,14 +468,7 @@ class ISKA(object):
                 widget.bind("<Button-1>", lambda e, q=query: self._dispatch(q))
             card.bind("<Button-1>", lambda e, q=query: self._dispatch(q))
 
-        # Exit button pinned to bottom
-        tk.Button(left, text="⏻  Exit Kiosk",
-                  font=("Helvetica", 10, "bold"),
-                  command=self.root.destroy,
-                  bg=RED_ERR, fg="white",
-                  relief=tk.FLAT, cursor="hand2",
-                  pady=8).pack(
-                      side=tk.BOTTOM, fill=tk.X, pady=(12, 0))
+        # Exit is hidden — triggered by tapping the PUP seal 5 times
 
     def _build_right(self, parent):
         right = tk.Frame(parent, bg=BG_CREAM,
@@ -488,16 +497,6 @@ class ISKA(object):
         tk.Label(hdr_txt, text="Intelligent Student Knowledge Assistant",
                  font=("Helvetica", 9),
                  bg=MAROON, fg=GOLD_LT).pack(anchor=tk.W)
-
-        # Online indicator dot
-        online_frame = tk.Frame(hdr, bg=MAROON)
-        online_frame.pack(side=tk.RIGHT, padx=16)
-        tk.Label(online_frame, text="●",
-                 font=("Helvetica", 10),
-                 bg=MAROON, fg=GREEN_ON).pack(side=tk.LEFT)
-        tk.Label(online_frame, text=" Online",
-                 font=("Helvetica", 10),
-                 bg=MAROON, fg="white").pack(side=tk.LEFT)
 
         # Scrollable chat area
         chat_wrap = tk.Frame(right, bg=BG_CREAM)
@@ -650,6 +649,132 @@ class ISKA(object):
         self.wake_up()
         threading.Thread(target=self._run_query, args=(query,),
                          daemon=True).start()
+
+    # =========================================================================
+    #  Hidden exit — PUP seal tap sequence + PIN dialog
+    # =========================================================================
+    def _on_seal_tap(self, event=None):
+        """
+        Counts taps on the PUP seal. After 5 taps within 3 seconds,
+        shows the staff PIN dialog. Resets if the timer expires.
+        """
+        self._seal_taps += 1
+
+        # Cancel any existing reset timer
+        if self._seal_timer:
+            self.root.after_cancel(self._seal_timer)
+
+        if self._seal_taps >= 5:
+            self._seal_taps  = 0
+            self._seal_timer = None
+            self._show_exit_pin_dialog()
+        else:
+            # Reset tap count after 3 seconds of inactivity
+            self._seal_timer = self.root.after(
+                3000, self._reset_seal_taps)
+
+    def _reset_seal_taps(self):
+        self._seal_taps  = 0
+        self._seal_timer = None
+
+    def _show_exit_pin_dialog(self):
+        """
+        Modal PIN dialog. Only staff who know EXIT_PIN can close the kiosk.
+        Three wrong attempts locks the dialog out for 30 seconds.
+        """
+        dialog = tk.Toplevel(self.root)
+        dialog.title("")
+        dialog.resizable(False, False)
+        dialog.grab_set()  # Modal — blocks interaction with main window
+
+        # Center on screen
+        dw, dh = 340, 260
+        sx = self.root.winfo_screenwidth()
+        sy = self.root.winfo_screenheight()
+        dialog.geometry(f"{dw}x{dh}+{(sx-dw)//2}+{(sy-dh)//2}")
+        dialog.configure(bg=BG_CREAM)
+        dialog.overrideredirect(True)  # No title bar
+
+        # Header
+        hdr = tk.Frame(dialog, bg=MAROON, height=50)
+        hdr.pack(fill=tk.X)
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text="Staff Access Required",
+                 font=("Georgia", 13, "bold"),
+                 bg=MAROON, fg="white").pack(expand=True)
+
+        # Body
+        body = tk.Frame(dialog, bg=BG_CREAM)
+        body.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
+
+        tk.Label(body, text="Enter PIN to exit kiosk:",
+                 font=("Helvetica", 11),
+                 bg=BG_CREAM, fg=TEXT_DARK).pack(anchor=tk.W, pady=(0, 8))
+
+        pin_var = tk.StringVar()
+        pin_entry = tk.Entry(body,
+                             textvariable=pin_var,
+                             font=("Helvetica", 18, "bold"),
+                             show="●", width=12,
+                             bg="white", fg=MAROON,
+                             insertbackground=MAROON,
+                             relief=tk.SOLID, bd=1,
+                             justify=tk.CENTER)
+        pin_entry.pack(fill=tk.X, pady=(0, 10))
+        pin_entry.focus_set()
+
+        msg_label = tk.Label(body, text="",
+                             font=("Helvetica", 10),
+                             bg=BG_CREAM, fg=RED_ERR)
+        msg_label.pack()
+
+        attempts = [0]  # Mutable container so inner functions can modify it
+
+        def _attempt_exit(event=None):
+            if attempts[0] >= 3:
+                return
+
+            entered = pin_var.get().strip()
+            if entered == EXIT_PIN:
+                dialog.destroy()
+                self.root.destroy()
+            else:
+                attempts[0] += 1
+                remaining = 3 - attempts[0]
+                if remaining > 0:
+                    msg_label.config(
+                        text=f"Incorrect PIN. {remaining} attempt(s) remaining.")
+                    pin_var.set("")
+                    pin_entry.focus_set()
+                else:
+                    # Lock out for 30 seconds
+                    msg_label.config(
+                        text="Too many attempts. Locked for 30 seconds.")
+                    pin_entry.config(state=tk.DISABLED)
+                    confirm_btn.config(state=tk.DISABLED)
+                    dialog.after(30000, dialog.destroy)
+
+        # Buttons
+        btn_row = tk.Frame(body, bg=BG_CREAM)
+        btn_row.pack(fill=tk.X, pady=(12, 0))
+
+        tk.Button(btn_row, text="Cancel",
+                  font=("Helvetica", 10),
+                  bg=GOLD_LT, fg=TEXT_DARK,
+                  relief=tk.FLAT, padx=16, pady=8,
+                  cursor="hand2",
+                  command=dialog.destroy).pack(side=tk.LEFT)
+
+        confirm_btn = tk.Button(btn_row, text="Confirm Exit",
+                                font=("Helvetica", 10, "bold"),
+                                bg=RED_ERR, fg="white",
+                                relief=tk.FLAT, padx=16, pady=8,
+                                cursor="hand2",
+                                command=_attempt_exit)
+        confirm_btn.pack(side=tk.RIGHT)
+
+        # Allow Enter key to confirm
+        pin_entry.bind("<Return>", _attempt_exit)
 
     # =========================================================================
     #  Microphone management
@@ -1044,14 +1169,18 @@ class ISKA(object):
                 newly_online = not self.is_online
                 self.is_online = True
                 if newly_online:
-                    self.root.after(0, lambda: self._network_label.config(
-                        text="● Online", fg=GREEN_ON))
+                    # Reflect online status on the ISKA ONLINE badge
+                    self.root.after(0, lambda: self.status_label.config(
+                        text="ISKA ONLINE", fg=MAROON))
+                    self.root.after(0, lambda: self._dot.config(fg=GOLD))
             except:
                 newly_offline = self.is_online
                 self.is_online = False
                 if newly_offline:
-                    self.root.after(0, lambda: self._network_label.config(
-                        text="● Offline", fg=RED_ERR))
+                    # Reflect offline status on the ISKA ONLINE badge
+                    self.root.after(0, lambda: self.status_label.config(
+                        text="ISKA OFFLINE", fg=RED_ERR))
+                    self.root.after(0, lambda: self._dot.config(fg=RED_ERR))
             time.sleep(5)
 
     # =========================================================================

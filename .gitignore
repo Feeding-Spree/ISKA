@@ -7,6 +7,7 @@ gemmatest.py
 mic_check.py
 .zip
 settings.json
+pup_logo.png
 
 # Ignore the Vosk model directory (add your specific folder name if different)
 vosk-model-*/
