@@ -85,8 +85,8 @@ ISKA follows the YAGNI (You Aren't Gonna Need It) principle and Semantic Version
 **System Snapshot:**
 * 📂 **CMS:** v1.1.0 (Analytics & Logs)
 * ⚙️ **CORE:** v2.7.0 (Security & Stability)
-* 🧠 **BACKEND:** v3.2.0 (AI & S-RAG)
-* 🎨 **FRONTEND:** v4.1.0 (UI/UX Interface)
+* 🧠 **BACKEND:** v3.3.0 (AI & S-RAG)
+* 🎨 **FRONTEND:** v4.2.0 (UI/UX Interface)
 
 
 

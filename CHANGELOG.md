@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This projec
 
 | Project Version | Release Date |  CMS (Admin) | Core (System) | Backend (AI) | Frontend (UI) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **v1.6.0** | 2026-05-14 | v1.1.0 | v2.7.0 | v3.3.0 | v4.2.0 | 
 | **v1.5.0** | 2026-05-14 | v1.1.0 | v2.7.0 | v3.2.0 | v4.1.0 | 
 | **v1.4.0** | 2026-05-13 | v1.1.0 | v2.4.0 | v3.2.0 | v4.0.1 | 
 | **v1.3.0** | 2026-05-13 | v1.1.0 | v2.3.0 | v3.2.0 | v4.0.0 | 
@@ -20,6 +21,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [4.x.x] — FRONTEND (UI/UX)
 *Focuses on the animated UI/UX interface, layout design, and student-facing chat components.*
+
+### [4.2.0] - 2026-05-16
+* **ISKA-UI-8003 MINOR** **Backend UI Hookup:** Integrated the BMO chat interface with the new Adaptive Response Layer to seamlessly handle alternating fast-track and streamed AI responses.
 
 ### [4.1.0] - 2026-05-14
 * **ISKA-UI-7031 MINOR** Added **Logo image support** in the topbar, replacing the gold text badge with `logo.png`.
@@ -42,6 +46,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [3.x.x] — BACKEND (AI & S-RAG)
 *Focuses on Semantic Vector Search, LLM integration, and intelligent response routing.*
+
+### [3.3.0] - 2026-05-16
+* **ISKA-BACKEND-8001 MAJOR** Completed a comprehensive **Semantic RAG Rewrite**, completely replacing legacy keyword matching with deep semantic intent parsing via `all-MiniLM-L6-v2` vector embeddings.
+* **ISKA-BACKEND-8002 MAJOR** Engineered the **Adaptive Response Layer** to dynamically intercept, classify, and route incoming student inquiries across Fast (Cached), Augmented (RAG), or Fallback paths.
 
 ### [3.2.0] - 2026-05-13
 * **ISKA-BACKEND-7009 MINOR** Added **Small Talk Interceptor** to bypass Ollama for greetings and capability questions.
