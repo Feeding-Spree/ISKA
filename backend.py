@@ -269,10 +269,11 @@ class IskaBackend:
 
         # Small talk interceptor — catches greetings and capability questions
         # before they reach Ollama, which tends to mishandle them.
-        small_talk = ["can you hear me", "hello", "hi", "kumusta",
-                      "are you there", "who are you", "what are you",
-                      "what can you do", "makakatulong ka ba"]
-        if any(phrase in user_input.lower() for phrase in small_talk):
+        # Greeting interceptor
+        greetings = ["can you hear me", "hello", "hi", "kumusta",
+                     "are you there", "who are you", "what are you",
+                     "what can you do", "makakatulong ka ba"]
+        if any(phrase in user_input.lower() for phrase in greetings):
             response = (
                 "ISKA AI:\n\nHello! I'm ISKA, your smart kiosk assistant for "
                 "PUP Biñan campus. You can ask me about offices, enrollment, "
@@ -281,6 +282,21 @@ class IskaBackend:
                 "ISKA AI:\n\nKamusta! Ako si ISKA, ang inyong kiosk assistant "
                 "para sa PUP Biñan campus. Maaari kayong magtanong tungkol sa "
                 "mga opisina, enrollment, iskedyul, at iba pa!"
+            )
+            if ui_callback:
+                ui_callback(response)
+            return response
+
+        # Farewell interceptor — these are handled by _sleep_sequence in main.py
+        # but caught here as a safety net in case they slip through to the backend
+        farewells = ["thank you", "thanks", "salamat", "goodbye",
+                     "bye", "paalam", "none", "nothing else",
+                     "that's all", "no more"]
+        if any(phrase in user_input.lower() for phrase in farewells):
+            response = (
+                "ISKA AI:\n\nYou're welcome! Have a great day ahead."
+                if lang == 'en' else
+                "ISKA AI:\n\nWalang anuman! Magandang araw sa iyo."
             )
             if ui_callback:
                 ui_callback(response)

@@ -302,7 +302,7 @@ class ISKA(object):
 
         # PUP seal — logo image (hidden exit trigger: tap 5x)
         pup_img = Image.open(os.path.join(ASSETS_DIR, "pup_logo.png")).convert("RGBA")
-        pup_img = pup_img.resize((50, 50), Image.LANCZOS)
+        pup_img = pup_img.resize((48, 48), Image.LANCZOS)
         self._pup_logo = ImageTk.PhotoImage(pup_img)  # keep reference
 
         seal_lbl = tk.Label(bar, image=self._pup_logo, bg=MAROON,
@@ -645,8 +645,22 @@ class ISKA(object):
         now = time.strftime("%I:%M %p")
         ChatMessage.add(self._chat_frame, query, sender="user", timestamp=now)
         self._scroll_bottom()
-        self._set_state("thinking", "Thinking...", GOLD)
         self.wake_up()
+
+        # Check sleep cues before sending to backend
+        sleep_cues = [
+            "thank you", "thanks", "thank", "goodbye", "good bye",
+            "bye", "go to sleep", "that's all", "that is all",
+            "salamat", "paalam", "none", "nothing else",
+            "no more", "wala na", "ok thanks", "okay thanks",
+            "ok thank", "okay thank", "no thank", "no, thank"
+        ]
+        if any(cue in query.lower() for cue in sleep_cues):
+            threading.Thread(target=self._sleep_sequence,
+                             args=(query,), daemon=True).start()
+            return
+
+        self._set_state("thinking", "Thinking...", GOLD)
         threading.Thread(target=self._run_query, args=(query,),
                          daemon=True).start()
 
@@ -996,8 +1010,11 @@ class ISKA(object):
     def _route_input(self, text_input: str):
         self.wake_up()
         sleep_cues = [
-            "thank you", "thanks", "goodbye", "bye", "go to sleep",
-            "that's all", "salamat", "paalam"
+            "thank you", "thanks", "thank", "goodbye", "good bye",
+            "bye", "go to sleep", "that's all", "that is all",
+            "salamat", "paalam", "none", "nothing else",
+            "no more", "wala na", "ok thanks", "okay thanks",
+            "ok thank", "okay thank", "no thank", "no, thank"
         ]
         if any(cue in text_input.lower() for cue in sleep_cues):
             threading.Thread(target=self._sleep_sequence,
