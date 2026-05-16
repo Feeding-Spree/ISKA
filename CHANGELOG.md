@@ -8,8 +8,8 @@ All notable changes to this project will be documented in this file. This projec
 
 | Project Version | Release Date |  CMS (Admin) | Core (System) | Backend (AI) | Frontend (UI) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **v1.6.0** | 2026-05-14 | v1.1.0 | v2.7.0 | v3.3.0 | v4.2.0 | 
-| **v1.5.0** | 2026-05-14 | v1.1.0 | v2.7.0 | v3.2.0 | v4.1.0 | 
+| **v1.6.0** | 2026-05-14 | v1.1.0 | v2.5.0 | v3.3.0 | v4.2.0 | 
+| **v1.5.0** | 2026-05-14 | v1.1.0 | v2.4.0 | v3.2.0 | v4.1.0 | 
 | **v1.4.0** | 2026-05-13 | v1.1.0 | v2.4.0 | v3.2.0 | v4.0.1 | 
 | **v1.3.0** | 2026-05-13 | v1.1.0 | v2.3.0 | v3.2.0 | v4.0.0 | 
 | **v1.2.0** | 2026-05-09 | v1.1.0 | v2.2.0 | v3.1.0 |  :---  | 
@@ -70,6 +70,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [2.x.x] — CORE (System & Hardware)
 *Focuses on hardware lifecycle management, kiosk security, and system stability.*
+
+### [2.5.0] - 2026-05-16
+* **ISKA-CORE-8004 MINOR** **Session Auto-Reset:** Implemented an automated session tear-down sequence triggered by gratitude/farewell semantic intents (e.g., "thank you").
+* **ISKA-CORE-8005 MINOR** **Synchronized Context Flush:** Configured the session reset state machine to delay memory buffer clearing and chat history flushes until *after* the Text-to-Speech (TTS) engine fully renders the AI's final response, ensuring a clean transition for the next student.
 
 ### [2.4.0] - 2026-05-14
 * **ISKA-CORE-7028 MINOR** **Kiosk Hardening:** Implemented a hidden exit mechanism (5-tap sequence on PUP seal) triggering a staff PIN dialog.
